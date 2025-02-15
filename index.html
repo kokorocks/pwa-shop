@@ -9,113 +9,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic PWA</title>
-    <meta name="theme-color" content="#007bff">
-    <link rel="icon" href="data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABbklEQVR42p2SQUvDQBSGv3MLyU9xlYqJ8QQhKylpBQkRJUKCCPoCXWgr2CMm1tbWUVCHqKPrwn0khaSkhKSmoQSMo3DMN7L3d6bOH0Qck3i+u7nPu2ON2FYajcGMW0Gl1GEAVRVEVABFAEpVS5H9fJ6QSCIjSYLA0AXJZFJKn1hO6zoOT3MycE6kQid6JYMIQqAYCwO57nKUSyaTSXTxIliHDvNx+NsmE8C4kkCQ9XudECOcRy+cJpZKkMmA6AeR+vUCmJgDHJxDpMg2n/f6PRGAZukArJ2CEOmSCOHq9UKqSCuCAJ+sox/A4Xvw5AERWhnmaH4gTS1q4TS8B9FGNCv+3Z4ccnJISjIwFOUAAnRR1zztR7pSyLKFv+AgbVoGMEvmoGPE/EqWtIwvX48ALm92KpCFwcqtYiO6PgnmAeuq4ag+FQBfFn2N1xV8ADauHiFS2EOB2AAAAAElFTkSuQmCC">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-            background: #f4f4f4;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My GitHub Pages PWA</title>
+  <!-- Theme color for the app title bar -->
+  <meta name="theme-color" content="#2196f3" />
+  <!-- A minimal style just for looks -->
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 2em; background: #f4f4f4; }
+    button { padding: 0.75em 1.5em; font-size: 1em; cursor: pointer; background: #2196f3; color: #fff; border: none; border-radius: 4px; }
+    #installPWA { margin-top: 1em; display: none; }
+  </style>
 </head>
 <body>
 
-    <h1>Dynamic PWA</h1>
-    <p>This app can be installed and works offline!</p>
-    <button id="installPWA" style="display:none;">Install PWA</button>
+  <h1>My GitHub Pages PWA</h1>
+  <p>This is a single-file PWA that should install and work offline.</p>
+  <button id="installPWA">Install App</button>
 
-    <script>
-        // 1️⃣ Dynamic Manifest
-        const manifestData = {
-            name: "Dynamic PWA",
-            short_name: "PWA",
-            start_url: ".",
-            display: "standalone",
-            background_color: "#ffffff",
-            theme_color: "#007bff",
-            icons: [
-                {
-                    src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABbklEQVR42p2SQUvDQBSGv3MLyU9xlYqJ8QQhKylpBQkRJUKCCPoCXWgr2CMm1tbWUVCHqKPrwn0khaSkhKSmoQSMo3DMN7L3d6bOH0Qck3i+u7nPu2ON2FYajcGMW0Gl1GEAVRVEVABFAEpVS5H9fJ6QSCIjSYLA0AXJZFJKn1hO6zoOT3MycE6kQid6JYMIQqAYCwO57nKUSyaTSXTxIliHDvNx+NsmE8C4kkCQ9XudECOcRy+cJpZKkMmA6AeR+vUCmJgDHJxDpMg2n/f6PRGAZukArJ2CEOmSCOHq9UKqSCuCAJ+sox/A4Xvw5AERWhnmaH4gTS1q4TS8B9FGNCv+3Z4ccnJISjIwFOUAAnRR1zztR7pSyLKFv+AgbVoGMEvmoGPE/EqWtIwvX48ALm92KpCFwcqtYiO6PgnmAeuq4ag+FQBfFn2N1xV8ADauHiFS2EOB2AAAAAElFTkSuQmCC",
-                    sizes: "192x192",
-                    type: "image/png"
-                }
-            ]
-        };
-
-        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: "application/json" });
-        const manifestURL = URL.createObjectURL(manifestBlob);
-        const link = document.createElement("link");
-        link.rel = "manifest";
-        link.href = manifestURL;
-        document.head.appendChild(link);
-
-        // 2️⃣ Dynamic Service Worker
-        const swCode = `
-            self.addEventListener('install', (event) => {
-                event.waitUntil(
-                    caches.open('pwa-cache').then((cache) => {
-                        return cache.addAll([
-                            '/',
-                            '/index.html'
-                        ]);
-                    })
-                );
-            });
-
-            self.addEventListener('fetch', (event) => {
-                event.respondWith(
-                    caches.match(event.request).then((response) => {
-                        return response || fetch(event.request);
-                    })
-                );
-            });
-        `;
-
-        const swBlob = new Blob([swCode], { type: "application/javascript" });
-        const swURL = URL.createObjectURL(swBlob);
-
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(swURL)
-                .then(() => console.log('Service Worker Registered'))
-                .catch((error) => console.error('Service Worker Registration Failed:', error));
+  <script>
+    /*
+      1) Define absolute start_url & scope for GH Pages:
+         Replace USERNAME, REPO_NAME with your own.
+         Or your custom domain if you have one.
+    */
+    const manifestData = {
+      name: "My GitHub Pages PWA",
+      short_name: "MyPWA",
+      start_url: "https://kokorocks.github.io/pwa-shop/",  // <--- CHANGE ME
+      scope: "https://kokorocks.github.io/pwa-shop/",      // <--- CHANGE ME
+      display: "standalone",
+      background_color: "#ffffff",
+      theme_color: "#2196f3",
+      icons: [
+        {
+          // 192x192 PNG
+          src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAAAyCAYAAAB/c8BiAAAACXBIWXMAABYlAAAWJQFJUiTwAAAACXZwQWcAAACjAAAAowB0UgeRAAAABmJLR0QA/wD/AP+gvaeTAAAEKUlEQVR4nO3aS4hNQRTF8Y/yR9Arp6g2NhYyf81BW9BAUQkTgoYI0I5pNVCIY1FUBTY6+6zU/n3NkeZnR8u+51z0d7Hc5z5lkaJJN3ZcZQOq7BmmxBkoIpaRZYw8lGCOm8Sft/fIZbbWbbT87K3+19vDr9xL4Lq3lR9guVAF4R2k0w3M9YRF0RP+f1OkOAe8L1CCWYg8bFLN7dC8viCwQH29DlfKCS8CrSxAJ8InVh4We0b75VEFoSx3a4NTvfZIT59bYPzMBUJ8F3wv8h8nLPX4JLaQgNTnX2d5PU2UcgC+9QnPTE0f5+TrxMi+szCBZPhjCL7tx2bE9ufGwjo/AxWq2YbIGn5awfH3ITv1EA7ez7t9Zm9zAnJ+3QwWeEf4GCLJAn7pS9GjX2Ug1u6DR0qXDzIT1r6eQAZF+r5BwU9i18fyxd0qp2Y6wQtS+9pVXRRSMuLD/LyoQ8B+HWw5hWfv0CLZMYHTRZfD3+jQfLCnKX9Je2dBfALsr9uoqc6ZaF93IG73rdcwz8CS0CH4dVbKN+/nxX2BrsBsj91zMnS19KMj2ce2INufNzwMBsN42N16bY6K2u2Bgx1vpuoFStqg6kfi6UuR9DHPIFUnPn2uXsc6yo6g0D4K/c/Et6z4fRbRKu2gBfCCP4dJ2/cKyupq3sIF7Idn5p6zE+7kce19VoDX7f9ANsE5N3AB9ZRG0AAAAASUVORK5CYII=",
+          sizes: "192x192",
+          type: "image/png"
+        },
+        {
+          // 512x512 PNG
+          src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAgMAAABe6D4UAAAACXBIWXMAABYlAAAWJQFJUiTwAAAACXZwQWcAAAF4AAAFeAEnD9rTAAAABmJLR0QA/wD/AP+gvaeTAAAEL0lEQVR4nO3bY2/TQBRG4V/0c6MrCipOB+vWs7AW1M/5d2m06q/AKZBRUdB5cWVEiB19vP/58KZ5VmbuuvsZbx07EnbT7F2OJTTpSDEmkkhhS2CCGHLUIKeKR2cR9NsZwIgzE7ChdiGmKJC6ug4Q/pb4gAeNzdqUbeIPAm5+OABeEr5+OABeEryZGFkc52ZZli3t/vb8RZs5D8qS5bBYdGa9+MVcZz69K13YqMtLy/2qyyI6vXy8ElBUZ7+vtKRA8LMHEbypW2bR7EB0Ge9Cz6AsNi9+Q/72btMZqSCruHKr8kxM1bzt/8hpTS1P9zjS2e7e7F2vLi3aVUSmZ4y2h3UM9Kqa/vzljC7u5zMb9oSl24sD+te9B7qfVwnu6HT2sAwExslIzsSI4T1uPFfEm1p7f7bn5zdPN1G7OfGjBYRGZ4xdNeiZBTr1zK6v2s9/ONhF14L0ftD7XU1dS1iXr++2wepMOrbh++9fDcxeBgnvGz62N+exTeE50n9czfNXOr4CPg6/Sc+EGdwB/++f7C6+ZcH4apgjiNXnAbsXGjZKwA/J+8KfDwUg6UH2ezFi/E1b66DbX71R5nFghA4dMHC7etb/vfcbkFRrhZ66w3m/3P36v38OAdb+AWrR7c+NTxAIQAAAABJRU5ErkJggg==",
+          sizes: "512x512",
+          type: "image/png"
         }
+      ]
+    };
 
-        // 3️⃣ PWA Install Button
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (event) => {
-            event.preventDefault();
-            deferredPrompt = event;
-            document.getElementById('installPWA').style.display = 'block';
-        });
+    // Build & inject manifest <link>
+    const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: "application/json" });
+    const manifestURL = URL.createObjectURL(manifestBlob);
+    const link = document.createElement("link");
+    link.rel = "manifest";
+    link.href = manifestURL;
+    document.head.appendChild(link);
 
-        document.getElementById('installPWA').addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('PWA Installed');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        });
+    /*
+     2) Dynamically create and register Service Worker.
+        Must be HTTPS or localhost. GH Pages is HTTPS, so that's fine.
+    */
+    const swCode = `
+      self.addEventListener('install', (event) => {
+        event.waitUntil(
+          caches.open('my-pwa-cache').then((cache) => {
+            // Cache index page (this single HTML) so it works offline
+            return cache.addAll(['./']);
+          })
+        );
+      });
 
-    </script>
+      self.addEventListener('fetch', (event) => {
+        event.respondWith(
+          caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || fetch(event.request);
+          })
+        );
+      });
+    `;
+    const swBlob = new Blob([swCode], { type: "application/javascript" });
+    const swURL = URL.createObjectURL(swBlob);
 
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register(swURL)
+        .then(() => console.log('Service Worker registered.'))
+        .catch(err => console.error('Service Worker registration failed:', err));
+    }
+
+    /*
+      3) Listen for beforeinstallprompt to show "Install App" button
+    */
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installPWA').style.display = 'inline-block';
+    });
+
+    document.getElementById('installPWA').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        console.log('User choice:', choiceResult.outcome);
+        deferredPrompt = null;
+      }
+    });
+  </script>
 </body>
 </html>
